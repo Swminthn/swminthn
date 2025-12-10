@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M. Swaminathan | Creative Portfolio</title>
+    
+    <!-- 1. Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- 2. Configure Tailwind Theme -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        zinc: { 850: '#1f1f22', 900: '#18181b', 950: '#09090b' },
+                        slate: { 800: '#1e293b', 850: '#162032', 900: '#0f172a' },
+                        amber: { 450: '#F59E0B' },
+                        red: { 600: '#dc2626', 700: '#b91c1c' },
+                        green: { 500: '#22c55e', 600: '#16a34a' } // Added for WhatsApp
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    animation: {
+                        'marquee': 'marquee 25s linear infinite',
+                        'typewriter': 'blink 1s step-end infinite',
+                        'fadeIn': 'fadeIn 0.5s ease-out forwards',
+                    },
+                    keyframes: {
+                        marquee: {
+                            '0%': { transform: 'translateX(0%)' },
+                            '100%': { transform: 'translateX(-50%)' }, // Changed from -100% to -50% for seamless looping
+                        },
+                        blink: {
+                            '0%, 100%': { opacity: '1' },
+                            '50%': { opacity: '0' },
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- 3. React Dependencies -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- 4. Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+
+    <style>
+        /* Base transition for smooth theme switching */
+        body { 
+            font-family: 'Inter', sans-serif; 
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .dark ::-webkit-scrollbar-thumb { background: #3f3f46; }
+        .dark ::-webkit-scrollbar-thumb:hover { background: #52525b; }
+
+        /* Adaptive Glass Panel */
+        .glass-panel { 
+            /* Light Mode Default */
+            background: rgba(255, 255, 255, 0.7); 
+            backdrop-filter: blur(16px); 
+            -webkit-backdrop-filter: blur(16px); 
+            border: 1px solid rgba(0, 0, 0, 0.05); 
+            transition: all 0.3s ease;
+        }
+        
+        /* Dark Mode Override */
+        .dark .glass-panel {
+            background: rgba(39, 39, 42, 0.4); 
+            border: 1px solid rgba(255, 255, 255, 0.05); 
+        }
+        
+        .timeline-line {
+            background: linear-gradient(to bottom, #F59E0B, #e2e8f0);
+        }
+        .dark .timeline-line {
+            background: linear-gradient(to bottom, #F59E0B, #27272a);
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // --- ICONS (SVG) ---
+        const Icon = ({ name, className }) => {
+            const icons = {
+                Mail: <><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></>,
+                Phone: <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>,
+                MapPin: <><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></>,
+                Download: <><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></>,
+                Code: <><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></>,
+                Palette: <><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></>,
+                Video: <><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></>,
+                Image: <><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></>,
+                X: <><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></>,
+                ExternalLink: <><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></>,
+                Briefcase: <><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></>,
+                Database: <><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></>,
+                Calendar: <><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></>,
+                Youtube: <><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.33 29 29 0 0 0-.46-5.33z"/><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"/></>,
+                Whatsapp: <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.008-.57-.008-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>,
+                Sun: <><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></>,
+                Moon: <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+            };
+            return (
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                    {icons[name] || <circle cx="12" cy="12" r="10"/>}
+                </svg>
+            );
+        };
+
+        // --- DATA ---
+        const PERSONA = {
+            name: "M. Swaminathan",
+            roles: ["Web Developer", "Web Designer", "Video Editor", "Image Editor"],
+            contact: {
+                email: "mswminthn@gmail.com",
+                phone: "+91-8778651794",
+                location: "Tiruchirappalli, Tamil Nadu"
+            },
+            bio: "A sincere learner aiming for self-development and organizational excellence. Experienced in Full-Stack Web Development, UI/UX Design, and Multimedia Editing with a strong focus on performance optimization and visual storytelling.",
+            experience: [
+                { id: 0, role: "Freelance Web Developer & Editor", company: "Self-Employed", location: "Remote / Trichy", period: "Feb 2025 - Present", desc: "Delivering custom web solutions and high-quality video editing for diverse clients. Managing end-to-end project lifecycles from concept to final deployment." },
+                { id: 1, role: "Web Developer", company: "Greypath Solutions", location: "Bengaluru", period: "Jun 2023 - Jan 2025", desc: "Developed responsive web apps using HTML, CSS, JS. Improved performance by 20% via code optimization." },
+                { id: 2, role: "Web Designer", company: "Vee Eee Technologies", location: "Chennai", period: "May 2018 - May 2023", desc: "Focused on color theory, typography, and accessibility. Increased load times by 30%." },
+                { id: 3, role: "Designer", company: "Kavi Tech Solutions", location: "Trichy", period: "Sep 2017 - Apr 2018", desc: "Leveraged Photoshop, Illustrator, and Figma for visual assets enhancing user satisfaction." }
+            ],
+            techStack: [
+                "PHP", "Python", "HTML5", "CSS3", "JavaScript", "jQuery", "Bootstrap", 
+                "Figma", "Adobe XD", "Photoshop", "Premiere Pro", "Illustrator",
+                "Oracle", "MySQL", "MongoDB"
+            ]
+        };
+
+        const YOUTUBE_CHANNELS = [
+            { id: 1, name: "Gnana Deepam", handle: "@Gnana-deepam", url: "https://www.youtube.com/@Gnana-deepam?sub_confirmation=1", subs: "12.5K" },
+            { id: 2, name: "Swaminathan", handle: "@swminthn", url: "https://www.youtube.com/@swminthn?sub_confirmation=1", subs: "5.2K" },
+            { id: 3, name: "Veeravengai", handle: "@veeravengai", url: "https://www.youtube.com/@veeravengai?sub_confirmation=1", subs: "8.1K" },
+            { id: 4, name: "M Swaminathan", handle: "@mswminthn", url: "https://www.youtube.com/@mswminthn?sub_confirmation=1", subs: "3.4K" },
+            { id: 5, name: "Learn Perfect", handle: "@learn_perfect", url: "https://www.youtube.com/@learn_perfect?sub_confirmation=1", subs: "15.3K" },
+            { id: 6, name: "Puliveeran", handle: "@puliveeran", url: "https://www.youtube.com/@puliveeran?sub_confirmation=1", subs: "6.7K" }
+        ];
+
+        const PROJECTS = [
+            {
+                id: 1,
+                title: "Graha Oorai Calculator",
+                category: "Web App",
+                // Uses the specific chart image you uploaded
+                image: "Oorai.jpg", 
+                icon: "Code",
+                status: "Completed",
+                desc: "A logic-driven astrological calculator web app. Features real-time planetary hour calculation based on sunrise/sunset logic.",
+                updates: [
+                    { day: 1, date: "Feb 10", title: "Algorithm Logic", desc: "Implemented the 7-planet cyclic array logic for calculating day/night rulers.", tags: ["JS", "Logic"] },
+                    { day: 2, date: "Feb 12", title: "UI Design", desc: "Designed the Glassmorphism card layout using Tailwind CSS.", tags: ["UI", "Tailwind"] },
+                    { day: 3, date: "Feb 14", title: "Testing", desc: "Verified calculation accuracy against traditional almanacs.", tags: ["QA"] }
+                ]
+            },
+            {
+                id: 2,
+                title: "Gnana Deepam Branding",
+                category: "Design",
+                // Uses the logo image you uploaded
+                image: "WhatsApp Image 2025-12-03 at 11.45.24 AM.jpeg",
+                icon: "Palette",
+                status: "Live",
+                desc: "Complete brand identity design for the spiritual YouTube channel 'Gnana Deepam', including logo, banners, and thumbnails.",
+                updates: [
+                    { day: 1, date: "Jan 05", title: "Logo Concept", desc: "Created the Golden Lotus meditation concept in Illustrator.", tags: ["Vector", "Logo"] },
+                    { day: 2, date: "Jan 08", title: "Channel Art", desc: "Designed responsive YouTube banners for mobile and desktop.", tags: ["Photoshop", "Branding"] }
+                ]
+            },
+            {
+                id: 3,
+                title: "Brand Promo Reel",
+                category: "Video",
+                image: "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&q=80&w=800",
+                icon: "Video",
+                status: "Completed",
+                desc: "A dynamic 30-second promo video edited in Premiere Pro with custom transitions.",
+                updates: []
+            },
+            {
+                id: 4,
+                title: "Product Retouching",
+                category: "Image",
+                image: "https://images.unsplash.com/photo-1542744094-24638eff58bb?auto=format&fit=crop&q=80&w=800",
+                icon: "Image",
+                status: "Completed",
+                desc: "High-end photo retouching for a luxury watch brand catalog.",
+                updates: []
+            }
+        ];
+
+        // --- COMPONENTS ---
+
+        const HeroCard = () => {
+            const [text, setText] = useState("");
+            const [roleIndex, setRoleIndex] = useState(0);
+            const [isDeleting, setIsDeleting] = useState(false);
+            const roles = PERSONA.roles;
+
+            useEffect(() => {
+                const currentRole = roles[roleIndex];
+                const typeSpeed = isDeleting ? 50 : 100;
+                const timer = setTimeout(() => {
+                    if (!isDeleting && text === currentRole) {
+                        setTimeout(() => setIsDeleting(true), 2000);
+                    } else if (isDeleting && text === "") {
+                        setIsDeleting(false);
+                        setRoleIndex((prev) => (prev + 1) % roles.length);
+                    } else {
+                        setText(currentRole.substring(0, text.length + (isDeleting ? -1 : 1)));
+                    }
+                }, typeSpeed);
+                return () => clearTimeout(timer);
+            }, [text, isDeleting, roleIndex]);
+
+            return (
+                <div className="glass-panel p-8 rounded-3xl col-span-12 md:col-span-8 relative overflow-hidden group hover:border-amber-500/30 transition-colors">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
+                    <div className="flex flex-col md:flex-row gap-6 items-start md:items-center h-full relative z-10">
+                        <div className="relative shrink-0">
+                            {/* Profile Image Container with Hover Group */}
+                            <div className="w-24 h-24 md:w-32 md:h-32 rounded-full border-2 border-amber-400/30 p-1 relative overflow-hidden group/image cursor-pointer">
+                                
+                                {/* 1. COLOR IMAGE (Bottom Layer - Revealed on Hover) */}
+                                <img 
+                                    src="https://drive.google.com/uc?export=view&id=15IBZcj2AbVxuV1kWkPHZM4iY0IxKhpee" 
+                                    alt="M. Swaminathan Color" 
+                                    referrerPolicy="no-referrer"
+                                    className="absolute inset-0 w-full h-full rounded-full bg-zinc-800 object-cover z-0 transition-transform duration-700 group-hover/image:scale-110" 
+                                    onError={(e) => {
+                                        // Fallback to professional placeholder if Drive link fails
+                                        e.target.onerror = null;
+                                        e.target.src = "https://images.unsplash.com/photo-1633332755192-727a05c4013d?q=80&w=1000&auto=format&fit=crop";
+                                    }}
+                                />
+
+                                {/* 2. BLACK & WHITE IMAGE (Top Layer - Visible initially, fades out on hover) */}
+                                <img 
+                                    src="https://drive.google.com/uc?export=view&id=1baK56EEYGtbdnb9kHSEVVN3LlRKbLpuc" 
+                                    alt="M. Swaminathan B&W" 
+                                    referrerPolicy="no-referrer"
+                                    className="relative w-full h-full rounded-full bg-zinc-800 object-cover z-10 transition-all duration-700 ease-in-out group-hover/image:opacity-0 group-hover/image:scale-110" 
+                                    onError={(e) => {
+                                        // Fallback logic: Use the same fallback image but FORCE it to be B&W using CSS
+                                        e.target.onerror = null;
+                                        e.target.src = "https://images.unsplash.com/photo-1633332755192-727a05c4013d?q=80&w=1000&auto=format&fit=crop";
+                                        e.target.style.filter = "grayscale(100%)"; // Apply CSS filter to ensure B&W effect works
+                                    }}
+                                />
+                                
+                                {/* Shine effect overlay (On Top of everything) */}
+                                <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-white/20 to-transparent opacity-0 group-hover/image:opacity-100 transition-opacity pointer-events-none z-20"></div>
+                            </div>
+                            
+                            {/* Status Indicator */}
+                            <div className="absolute bottom-1 right-1 w-6 h-6 bg-green-500 rounded-full border-4 border-slate-50 dark:border-zinc-900 animate-pulse z-30"></div>
+                        </div>
+                        <div className="flex-1 space-y-2">
+                            <h1 className="text-3xl md:text-5xl font-bold text-slate-800 dark:text-white tracking-tight">{PERSONA.name}</h1>
+                            <div className="h-8 flex items-center gap-2">
+                                <span className="text-amber-500 dark:text-amber-400 font-mono text-lg md:text-xl font-medium">&gt; {text}</span>
+                                <span className="w-2 h-5 bg-amber-500 dark:bg-amber-400 animate-typewriter inline-block"></span>
+                            </div>
+                            <p className="text-slate-600 dark:text-zinc-400 max-w-lg text-sm md:text-base leading-relaxed mt-2">{PERSONA.bio}</p>
+                            <div className="flex flex-wrap gap-3 pt-4">
+                                {/* Email */}
+                                <a href={`mailto:${PERSONA.contact.email}`} className="flex items-center gap-2 px-4 py-2 rounded-full bg-white dark:bg-zinc-800 hover:bg-slate-100 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 transition-all text-sm border border-slate-200 dark:border-zinc-700 shadow-sm">
+                                    <Icon name="Mail" className="w-4 h-4" /> Email
+                                </a>
+                                {/* Phone Number Button */}
+                                <a href={`tel:+918778651794`} className="flex items-center gap-2 px-4 py-2 rounded-full bg-white dark:bg-zinc-800 hover:bg-slate-100 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 transition-all text-sm border border-slate-200 dark:border-zinc-700 shadow-sm">
+                                    <Icon name="Phone" className="w-4 h-4" /> +91-8778651794
+                                </a>
+                                {/* WhatsApp Button */}
+                                <a href={`https://wa.me/918778651794`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 rounded-full bg-green-500 hover:bg-green-600 text-white font-bold transition-all text-sm shadow-lg shadow-green-500/20">
+                                    <Icon name="Whatsapp" className="w-4 h-4" /> Chat on WhatsApp
+                                </a>
+                                <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 text-sm border border-slate-200 dark:border-zinc-700 shadow-sm">
+                                    <Icon name="MapPin" className="w-4 h-4 text-amber-500" /> {PERSONA.contact.location}
+                                </div>
+                                {/* Updated Resume Link */}
+                                <a 
+                                    href="https://drive.google.com/file/d/15IBZcj2AbVxuV1kWkPHZM4iY0IxKhpee/view?usp=drivesdk" 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500 hover:bg-amber-600 text-white dark:text-zinc-900 font-bold transition-all text-sm shadow-lg shadow-amber-500/20"
+                                >
+                                    <Icon name="Download" className="w-4 h-4" /> Resume
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const TechStackCard = () => {
+            return (
+                <div className="glass-panel p-6 rounded-3xl col-span-12 md:col-span-4 flex flex-col justify-center overflow-hidden relative">
+                    <h3 className="text-slate-500 dark:text-zinc-400 text-xs font-bold uppercase tracking-widest mb-4 z-10 flex items-center gap-2">
+                        <Icon name="Code" className="w-4 h-4 text-amber-500" /> Tech Arsenal
+                    </h3>
+                    
+                    {/* Fixed: Replaced blocking gradient overlay with CSS Mask for perfect fading in both Light/Dark modes */}
+                    <div className="space-y-6" style={{ maskImage: 'linear-gradient(to right, transparent, black 10%, black 90%, transparent)', WebkitMaskImage: 'linear-gradient(to right, transparent, black 10%, black 90%, transparent)' }}>
+                        <div className="flex overflow-hidden">
+                            <div className="flex gap-4 animate-marquee whitespace-nowrap">
+                                {[...PERSONA.techStack, ...PERSONA.techStack].map((tech, i) => (
+                                    <span key={i} className="px-3 py-1 bg-white dark:bg-zinc-800/50 border border-slate-200 dark:border-zinc-700 rounded-lg text-slate-600 dark:text-slate-200 text-sm font-mono shadow-sm">{tech}</span>
+                                ))}
+                            </div>
+                        </div>
+                        <div className="flex overflow-hidden">
+                            <div className="flex gap-4 animate-marquee whitespace-nowrap" style={{ animationDuration: '30s', animationDirection: 'reverse' }}>
+                                {[...PERSONA.techStack, ...PERSONA.techStack].reverse().map((tech, i) => (
+                                    <span key={i} className="px-3 py-1 bg-white dark:bg-zinc-800/50 border border-slate-200 dark:border-zinc-700 rounded-lg text-slate-600 dark:text-slate-200 text-sm font-mono shadow-sm">{tech}</span>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const ExperienceCard = () => {
+            return (
+                <div className="glass-panel p-6 rounded-3xl col-span-12 md:col-span-4 row-span-2 overflow-y-auto max-h-[500px]">
+                    <div className="flex items-center gap-2 mb-6 sticky top-0 bg-transparent backdrop-blur-md z-10 py-2">
+                        <Icon name="Briefcase" className="w-5 h-5 text-amber-500" />
+                        <h3 className="text-slate-800 dark:text-zinc-100 font-bold text-lg">Experience</h3>
+                    </div>
+                    <div className="space-y-8 relative pl-4 border-l border-slate-200 dark:border-zinc-700 ml-2">
+                        {PERSONA.experience.map((job) => (
+                            <div key={job.id} className="relative group">
+                                <div className="absolute -left-[21px] top-1 w-3 h-3 rounded-full bg-slate-200 dark:bg-zinc-800 border-2 border-slate-400 dark:border-zinc-600 group-hover:border-amber-400 group-hover:bg-amber-400 transition-colors shadow-[0_0_10px_rgba(245,158,11,0.3)]"></div>
+                                <div className="flex flex-col">
+                                    <span className="text-xs text-amber-600 dark:text-amber-400 font-mono mb-1">{job.period}</span>
+                                    <h4 className="text-slate-800 dark:text-white font-bold text-lg">{job.role}</h4>
+                                    <p className="text-slate-500 dark:text-zinc-400 text-sm font-medium">{job.company}</p>
+                                    <p className="text-slate-500 dark:text-zinc-500 text-xs mt-2 leading-relaxed">{job.desc}</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+        };
+
+        const ProjectCard = ({ project, onClick }) => (
+            <div 
+                onClick={() => onClick(project)}
+                className="group relative h-64 rounded-3xl overflow-hidden cursor-pointer border border-slate-200 dark:border-zinc-800 hover:border-amber-500/50 transition-all duration-300 shadow-md hover:shadow-xl dark:shadow-none bg-white dark:bg-zinc-900"
+            >
+                {/* Updated Image Tag with Fallback Logic same as Profile Photo */}
+                <img 
+                    src={project.image} 
+                    alt={project.title} 
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
+                    onError={(e) => {
+                        // If your local image isn't found, fallback to a nice Unsplash image
+                        e.target.onerror = null;
+                        e.target.src = "https://images.unsplash.com/photo-1555099962-4199c345e5dd?auto=format&fit=crop&q=80&w=800";
+                    }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/20 to-transparent opacity-60 dark:opacity-80 group-hover:opacity-90 transition-opacity"></div>
+                
+                <div className="absolute top-4 right-4 bg-white/90 dark:bg-zinc-900/80 backdrop-blur p-2 rounded-full border border-slate-200 dark:border-zinc-700 text-slate-800 dark:text-white shadow-lg">
+                    <Icon name={project.icon} className="w-4 h-4" />
+                </div>
+
+                <div className="absolute bottom-0 left-0 p-6 w-full transform translate-y-2 group-hover:translate-y-0 transition-transform">
+                    <div className="flex items-center gap-2 mb-2">
+                         <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-amber-500/90 text-white border border-amber-500/20 shadow-sm">{project.category}</span>
+                    </div>
+                    <h3 className="text-xl font-bold text-white mb-2">{project.title}</h3>
+                    <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity delay-75">
+                        <span className="text-xs text-zinc-200 font-medium">View Dev Diary</span>
+                        <Icon name="ExternalLink" className="w-3 h-3 text-amber-400" />
+                    </div>
+                </div>
+            </div>
+        );
+
+        const YouTubeCard = ({ channel }) => (
+            <a href={channel.url} target="_blank" rel="noopener noreferrer" className="glass-panel p-4 rounded-2xl flex items-center justify-between group hover:bg-slate-100 dark:hover:bg-zinc-800/50 transition-all border border-slate-200 dark:border-zinc-800 hover:border-red-600/30">
+                <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-full bg-red-50 dark:bg-red-600/10 flex items-center justify-center border border-red-100 dark:border-red-600/20 group-hover:scale-110 transition-transform">
+                        <Icon name="Youtube" className="w-6 h-6 text-red-600" />
+                    </div>
+                    <div>
+                        <h4 className="text-slate-800 dark:text-white font-bold text-sm leading-tight group-hover:text-red-600 dark:group-hover:text-red-500 transition-colors">{channel.name}</h4>
+                        <p className="text-slate-500 dark:text-zinc-500 text-xs font-mono">{channel.handle}</p>
+                    </div>
+                </div>
+                <div className="text-right">
+                    <span className="block text-slate-800 dark:text-white font-bold text-sm">{channel.subs}</span>
+                    <span className="text-[10px] text-slate-400 dark:text-zinc-500 uppercase tracking-wider">Subs</span>
+                </div>
+            </a>
+        );
+
+        const ProjectModal = ({ project, onClose }) => {
+            if (!project) return null;
+
+            return (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 dark:bg-black/90 backdrop-blur-md animate-fadeIn">
+                    <div className="bg-white dark:bg-zinc-900 w-full max-w-6xl h-[85vh] rounded-3xl border border-slate-200 dark:border-zinc-800 shadow-2xl overflow-hidden flex flex-col md:flex-row relative">
+                        
+                        <button onClick={onClose} className="absolute top-4 right-4 z-20 p-2 bg-white/50 dark:bg-black/50 hover:bg-slate-100 dark:hover:bg-zinc-700 rounded-full text-slate-800 dark:text-white transition-colors border border-slate-200 dark:border-zinc-700">
+                            <Icon name="X" className="w-5 h-5" />
+                        </button>
+
+                        <div className="w-full md:w-5/12 h-full relative group">
+                            <img src={project.image} alt={project.title} className="w-full h-full object-cover opacity-90 dark:opacity-50" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/20 to-transparent dark:from-zinc-900 dark:via-zinc-900/50"></div>
+                            <div className="absolute bottom-0 left-0 p-8 w-full">
+                                <div className="flex flex-wrap gap-2 mb-4">
+                                    <span className={`px-3 py-1 rounded-full text-xs font-bold border ${project.status === 'Completed' ? 'bg-green-100 border-green-200 text-green-700 dark:bg-green-500/10 dark:border-green-500/30 dark:text-green-400' : 'bg-amber-100 border-amber-200 text-amber-700 dark:bg-amber-500/10 dark:border-amber-500/30 dark:text-amber-400'}`}>
+                                        {project.status}
+                                    </span>
+                                </div>
+                                <h2 className="text-3xl md:text-4xl font-bold text-white mb-4 leading-tight">{project.title}</h2>
+                                <p className="text-slate-200 dark:text-zinc-300 text-sm md:text-base leading-relaxed border-t border-white/20 dark:border-zinc-700 pt-4">{project.desc}</p>
+                            </div>
+                        </div>
+
+                        <div className="w-full md:w-7/12 bg-slate-50 dark:bg-zinc-950 p-8 flex flex-col h-full border-l border-slate-200 dark:border-zinc-800">
+                            <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-200 dark:border-zinc-800/50">
+                                <div>
+                                    <h3 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                                        <Icon name="Database" className="w-5 h-5 text-amber-500" />
+                                        Development Diary
+                                    </h3>
+                                    <p className="text-slate-500 dark:text-zinc-500 text-xs mt-1">Day-by-Day Progress Tracker</p>
+                                </div>
+                                <div className="text-right bg-white dark:bg-zinc-900 px-3 py-1 rounded-lg border border-slate-200 dark:border-zinc-800">
+                                    <span className="block text-xl font-bold text-slate-800 dark:text-white">{project.updates.length}</span>
+                                    <span className="text-[10px] text-slate-400 dark:text-zinc-500 uppercase tracking-widest">Logs</span>
+                                </div>
+                            </div>
+
+                            <div className="flex-1 overflow-y-auto pr-4 custom-scrollbar">
+                                {project.updates.length > 0 ? (
+                                    <div className="space-y-8 relative pl-3">
+                                        <div className="absolute left-[7px] top-2 bottom-4 w-[2px] timeline-line opacity-50 dark:opacity-30"></div>
+                                        {project.updates.map((log, index) => (
+                                            <div key={index} className="relative pl-8 group">
+                                                <div className="absolute left-0 top-1.5 w-4 h-4 rounded-full bg-slate-50 dark:bg-zinc-950 border-2 border-amber-500/50 group-hover:bg-amber-500 group-hover:scale-110 transition-all z-10 shadow-sm"></div>
+                                                <div className="flex items-center justify-between mb-2">
+                                                    <h4 className="text-slate-800 dark:text-zinc-200 font-bold text-lg group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">{log.title}</h4>
+                                                    <div className="flex items-center gap-2 bg-white dark:bg-zinc-900 px-2 py-1 rounded border border-slate-200 dark:border-zinc-800">
+                                                        <Icon name="Calendar" className="w-3 h-3 text-slate-400 dark:text-zinc-500" />
+                                                        <span className="text-slate-500 dark:text-zinc-400 font-mono text-xs">{log.date}</span>
+                                                        <span className="text-[10px] text-amber-600 dark:text-amber-500 font-bold bg-amber-50 dark:bg-amber-500/10 px-1 rounded">Day {log.day}</span>
+                                                    </div>
+                                                </div>
+                                                <p className="text-slate-600 dark:text-zinc-400 text-sm leading-relaxed mb-3 bg-white dark:bg-zinc-900/50 p-3 rounded-lg border border-slate-200 dark:border-zinc-800/50 shadow-sm dark:shadow-none">{log.desc}</p>
+                                                <div className="flex flex-wrap gap-2">
+                                                    {log.tags && log.tags.map(tag => (
+                                                        <span key={tag} className="text-[10px] px-2 py-0.5 bg-slate-100 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded text-slate-500 dark:text-zinc-400 font-mono group-hover:border-amber-500/30 group-hover:text-amber-600 dark:group-hover:text-amber-500/80 transition-colors">
+                                                            #{tag}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="h-full flex flex-col items-center justify-center text-slate-400 dark:text-zinc-600 space-y-4">
+                                        <div className="w-16 h-16 rounded-full bg-slate-100 dark:bg-zinc-900 flex items-center justify-center">
+                                            <Icon name="Code" className="w-8 h-8 opacity-20" />
+                                        </div>
+                                        <p>No daily logs available for this project.</p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const App = () => {
+            const [selectedProject, setSelectedProject] = useState(null);
+            const [isDark, setIsDark] = useState(true);
+
+            const toggleTheme = () => setIsDark(!isDark);
+
+            return (
+                <div className={`min-h-screen transition-colors duration-300 ${isDark ? 'dark bg-zinc-950 text-slate-100' : 'bg-slate-50 text-slate-900'}`}>
+                    <div className="p-4 md:p-8 selection:bg-amber-500/30">
+                        <div className="max-w-7xl mx-auto grid grid-cols-12 gap-4 md:gap-6 animate-fadeIn">
+                            
+                            {/* Header Area */}
+                            <HeroCard />
+                            <TechStackCard />
+
+                            {/* Content Area */}
+                            <ExperienceCard />
+                            
+                            <div className="col-span-12 md:col-span-8 row-span-2">
+                                <div className="glass-panel p-6 rounded-3xl h-full flex flex-col">
+                                    <div className="flex items-center justify-between mb-6">
+                                        <h3 className="text-slate-800 dark:text-zinc-100 font-bold text-lg flex items-center gap-2">
+                                            <Icon name="Palette" className="w-5 h-5 text-amber-500" />
+                                            Selected Works
+                                        </h3>
+                                        <div className="flex gap-2 items-center bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20">
+                                            <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+                                            <span className="text-xs text-amber-700 dark:text-amber-200 font-medium">Click for Dev Diary</span>
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1">
+                                        {PROJECTS.map(project => (
+                                            <ProjectCard key={project.id} project={project} onClick={setSelectedProject} />
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* NEW: YouTube Section */}
+                            <div className="col-span-12">
+                                <div className="glass-panel p-6 rounded-3xl">
+                                    <h3 className="text-slate-800 dark:text-zinc-100 font-bold text-lg flex items-center gap-2 mb-6">
+                                        <Icon name="Youtube" className="w-5 h-5 text-red-600" />
+                                        Content Creation & YouTube Network
+                                    </h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        {YOUTUBE_CHANNELS.map(channel => (
+                                            <YouTubeCard key={channel.id} channel={channel} />
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Footer with Theme Toggle */}
+                            <div className="col-span-12 flex justify-between items-center text-slate-500 dark:text-zinc-600 text-xs py-4 px-2 border-t border-slate-200 dark:border-zinc-900 mt-4">
+                                <div className="flex flex-col md:flex-row gap-1 md:gap-4">
+                                    <p>© 2025 M. Swaminathan. All rights reserved.</p>
+                                    <p className="hidden md:block">|</p>
+                                    <p>Built with React & Tailwind</p>
+                                </div>
+                                
+                                {/* Theme Toggle Button */}
+                                <button 
+                                    onClick={toggleTheme}
+                                    className="flex items-center gap-2 px-4 py-2 rounded-full bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 hover:border-amber-500/50 transition-all shadow-sm group"
+                                >
+                                    <span className="group-hover:scale-110 transition-transform duration-300 text-amber-500">
+                                        {isDark ? <Icon name="Sun" className="w-4 h-4" /> : <Icon name="Moon" className="w-4 h-4" />}
+                                    </span>
+                                    <span className="font-bold text-slate-700 dark:text-zinc-300">
+                                        {isDark ? 'Light Mode' : 'Dark Mode'}
+                                    </span>
+                                </button>
+                            </div>
+                        </div>
+
+                        {selectedProject && (
+                            <ProjectModal project={selectedProject} onClose={() => setSelectedProject(null)} />
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
